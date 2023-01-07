@@ -1,11 +1,9 @@
 const Mongoose = require('mongoose');
 const { Schema } = Mongoose;
 
-const shortid = require('shortid');
-
-// Schema for Users
+// Schema for JobPosts
 const JobPostSchema = new Schema({
-    comapnyName: {
+    companyName: {
         type: String,
         required: true
     },
@@ -18,6 +16,10 @@ const JobPostSchema = new Schema({
     },
     jobRole: {
         type: String,
+        required: true
+    },
+    skills: {
+        type: [String],
         required: true
     },
     linkToApply: {

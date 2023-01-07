@@ -14,11 +14,15 @@ app.use(express.urlencoded({ extended: true }));
 const userRoutes = require('./routes/users');
 const hirerRoutes = require('./routes/hirers');
 const companyRoutes = require('./routes/companies');
+const jobpostRoutes = require('./routes/jobposts');
+const feedRoutes = require('./routes/feeds');
 
 // Routing
 app.use('/user', userRoutes);
 app.use('/hirer', hirerRoutes);
 app.use('/company', companyRoutes);
+app.use('/jobpost', jobpostRoutes);
+app.use('/feed', feedRoutes);
 
 
 // Home Page
