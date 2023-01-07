@@ -18,7 +18,7 @@ module.exports.getFeed = async (req, res) => {
 
         let skills = user.skills;
 
-        console.log(skills);
+        // console.log(skills);
 
         let jobposts = await JobPost.find({});
 
@@ -26,7 +26,7 @@ module.exports.getFeed = async (req, res) => {
         for (let i in jobposts) {
 
             let jobpost = jobposts[i];
-            console.log(jobpost);
+            // console.log(jobpost);
 
             let requireSkills = jobpost.skills;
 
