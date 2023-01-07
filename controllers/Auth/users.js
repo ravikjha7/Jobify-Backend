@@ -46,12 +46,25 @@ module.exports.registerUser = async (req, res) => {
 
         try {
             const message = `
-            Congratulations ${name}, you have joined our Jobify family !!!
-            In order to continue with your account, just make sure to verify it using the below link.
+            <html>
+            <body>
             
-            <a href="${process.env.BASE_URL}/user/verify/${token}">www.jobify.com/verifyMyAccount</a>
+            <p>Hello <strong>${name}</strong>,</p>
+            <p>Thank you  for signing up for Jobify! We're excited to have you on board.</p> 
+
+            <p>Before you can start using the app, we need to verify your account. To do this, please click on the link below:</p> 
+            <p><a href="${process.env.BASE_URL}/user/verify/${token}">www.jobify.com/verifyMyAccount</a><br></p>
+
+            <p>Once you have verified your email, you can start using Jobify to find job opportunities and connect with potential employers.</p>
+
+            <p>If you did not sign up for Jobify, you can safely ignore this email.</p>
+
+            <p>Thanks for Joining Jobify! Hope you would get your dream job soon !!!</p>
             
-            Thanks for Joining Jobify! Hope you would get your dream job soon !!!
+            <p>Thanks,<br>
+            Jobify</p>
+            </body>
+            </html>
             `;
             sendEmail(user.email, "Verification Email - Jobify !!!", message);
         } catch (err) {
