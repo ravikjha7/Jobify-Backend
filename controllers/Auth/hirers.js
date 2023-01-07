@@ -1,0 +1,225 @@
+const Hirer = require('../../models/hirer');
+const jwt = require('jsonwebtoken');
+const { createHash } = require('crypto');
+const sendEmail = require("../../utils/email");
+
+const JWT_SECRET = process.env.H_JWT_SECRET;
+
+// Function for Hashing Password using SHA256 Algorithm
+function hash(string) {
+    return createHash('sha256').update(string).digest('hex');
+};
+
+module.exports.registerHirer = async (req, res) => {
+
+    try {
+
+        const { name, email, contact } = req.body;
+
+        // If email already exists
+        let theHirer = await Hirer.find({ "email": email });
+        if (theHirer.length > 0) {
+            return res.status(400).json({
+                message: "Email already exists !!!"
+            });
+        }
+
+        // If contact number already exists
+        theHirer = await Hirer.find({ "contact": contact });
+        if (theHirer.length > 0) {
+            return res.status(400).json({
+                message: "Contact Number already exists !!!"
+            });
+        }
+
+        // Hashing The Password
+        const password = hash(req.body.password);
+
+        // creating the hirer
+        const hirer = await Hirer.create({ name, email, password, contact });
+
+        // Creating the jwt token
+        const token = jwt.sign({
+            exp: Math.floor(Date.now() / 1000) + (60 * 60 * 24 * 100),
+            data: { data: hirer }
+        }, JWT_SECRET);
+
+        try {
+            const message = `
+            Congratulations ${name}, you have joined our Jobify family !!!
+            In order to continue with your account, just make sure to verify it using the below link.
+            
+            <a href="${process.env.BASE_URL}/hirer/verify/${token}">www.jobify.com/verifyMyAccount</a>
+            
+            Thanks for Joining Jobify! Hope you would get your dream job soon !!!
+            `;
+            sendEmail(hirer.email, "Verification Email - Jobify !!!", message);
+        } catch (err) {
+            return res.status(400).json({ message: "Invalid Email Address !!!" });
+        }
+
+        // everything OK !
+        return res.status(201).json({
+            message: "Successfully Registered !!!",
+            hirer: hirer,
+            token: token
+        });
+
+    } catch (e) {
+        return res.status(400).json({
+            message: e.message
+        });
+    }
+};
+
+
+module.exports.loginHirer = async (req, res) => {
+
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+        return res.status(400).json({
+            message: "Email or Password not present"
+        });
+    }
+
+    try {
+        let hirer = await Hirer.find({ "email": email });
+
+        if (hirer.length === 0) {
+            return res.status(400).json({
+                message: "Invalid Email !!!"
+            });
+        }
+
+        hirer = hirer[0];
+
+        if(!hirer.emailVerified) {
+            return res.status(400).json({
+                message: "Complete your Email Verification first !!!"
+            });
+        }
+
+        if(!hirer.idUploaded) {
+            return res.status(400).json({
+                message: "Upload your ID Card and Company Details !!!",
+                uploadID: true,
+                hirer: hirer
+            });
+        }
+
+        if(!hirer.idVerified) {
+            return res.status(400).json({
+                message: "Your ID Verification is under progress !!!"
+            });
+        }
+
+        if(hirer.isBanned) {
+            return res.status(400).json({
+                message: "Your are Banned, Kindly check your mail for further details !!!"
+            });
+        }
+
+        const hashedPassword = hash(password);
+
+        if(hashedPassword !== hirer.password) {
+            return res.status(400).json({
+                message: "Incorrect Password !!!"
+            })
+        }
+
+        // Creating the jwt token
+        const token = jwt.sign({
+            exp: Math.floor(Date.now() / 1000) + (60 * 60 * 24 * 100),
+            data: { data: hirer }
+        }, JWT_SECRET);
+
+
+        // everything OK!
+        return res.status(201).json({
+            message: "Successfully Logged In !!!",
+            hirer: hirer,
+            token: token
+        });
+
+
+    } catch (e) {
+        return res.status(400).json({
+            message: e.message
+        });
+    }
+
+
+}
+
+
+module.exports.uploadID = async(req, res) => {
+
+    const { email, companyName, idCard } = req.body;
+
+    if(!email || !companyName || !idCard) {
+        return res.status(400).json({
+            message: "Some Information is Missing !!!"
+        });
+    }
+
+    try {
+        let hirer = await Hirer.find({ "email": email });
+
+        if (hirer.length === 0) {
+            return res.status(400).json({
+                message: "Invalid Email !!!"
+            });
+        }
+
+        hirer = hirer[0];
+
+        if(!hirer.emailVerified) {
+            return res.status(400).json({
+                message: "Complete your Email Verification first !!!"
+            });
+        }
+
+        if(hirer.idUploaded) {
+            return res.status(400).json({
+                message: "You have already uploaded your ID !!!"
+            });
+        }
+        
+
+        hirer.idCard = idCard;
+        hirer.idUploaded = true;
+        await hirer.save();
+
+
+        // everything OK!
+        return res.status(201).json({
+            message: "Details Sent for Verification !!!"
+        });
+
+
+    } catch (e) {
+        return res.status(400).json({
+            message: e.message
+        });
+    }
+
+
+}
+
+
+module.exports.verify = async (req, res) => {
+    try {
+        let data = jwt.verify(req.params.token, JWT_SECRET);
+
+        data = data.data;
+        data = data.data;
+
+        await Hirer.findByIdAndUpdate(data._id, { emailVerified: true });
+        return res.status(201).json({ message: "Correct !!!" });
+
+    } catch (e) {
+        return res.status(400).json({ message: "Invalid Token or Token Expired !!!" });
+    }
+
+}

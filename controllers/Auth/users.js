@@ -1,0 +1,156 @@
+const User = require('../../models/user');
+const jwt = require('jsonwebtoken');
+const { createHash } = require('crypto');
+const sendEmail = require("../../utils/email");
+
+const JWT_SECRET = process.env.JWT_SECRET;
+
+// Function for Hashing Password using SHA256 Algorithm
+function hash(string) {
+    return createHash('sha256').update(string).digest('hex');
+};
+
+module.exports.registerUser = async (req, res) => {
+
+    try {
+
+        const { name, email, contact } = req.body;
+
+        // If email already exists
+        let theUser = await User.find({ "email": email });
+        if (theUser.length > 0) {
+            return res.status(400).json({
+                message: "Email already exists !!!"
+            });
+        }
+
+        // If contact number already exists
+        theUser = await User.find({ "contact": contact });
+        if (theUser.length > 0) {
+            return res.status(400).json({
+                message: "Contact Number already exists !!!"
+            });
+        }
+
+        // Hashing The Password
+        const password = hash(req.body.password);
+
+        // creating the user
+        const user = await User.create({ name, email, password, contact });
+
+        // Creating the jwt token
+        const token = jwt.sign({
+            exp: Math.floor(Date.now() / 1000) + (60 * 60 * 24 * 100),
+            data: { data: user }
+        }, JWT_SECRET);
+
+        try {
+            const message = `
+            Congratulations ${name}, you have joined our Jobify family !!!
+            In order to continue with your account, just make sure to verify it using the below link.
+            
+            <a href="${process.env.BASE_URL}/user/verify/${token}">www.jobify.com/verifyMyAccount</a>
+            
+            Thanks for Joining Jobify! Hope you would get your dream job soon !!!
+            `;
+            sendEmail(user.email, "Verification Email - Jobify !!!", message);
+        } catch (err) {
+            return res.status(400).json({ message: "Invalid Email Address !!!" });
+        }
+
+        // everything OK !
+        return res.status(201).json({
+            message: "Successfully Registered !!!",
+            user: user,
+            token: token
+        });
+
+    } catch (e) {
+        return res.status(400).json({
+            message: e.message
+        });
+    }
+};
+
+
+module.exports.loginUser = async (req, res) => {
+
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+        return res.status(400).json({
+            message: "Email or Password not present"
+        })
+    }
+
+    try {
+        let user = await User.find({ "email": email });
+
+        if (user.length === 0) {
+            return res.status(400).json({
+                message: "Invalid Email !!!"
+            });
+        }
+
+        user = user[0];
+
+        if(!user.verified) {
+            return res.status(400).json({
+                message: "Complete your Verification first !!!"
+            });
+        }
+
+        if(user.isBanned) {
+            return res.status(400).json({
+                message: "Your are Banned, Kindly check your mail for further details !!!"
+            });
+        }
+
+        const hashedPassword = hash(password);
+
+        if(hashedPassword !== user.password) {
+            return res.status(400).json({
+                message: "Incorrect Password !!!"
+            })
+        }
+
+        // Creating the jwt token
+        const token = jwt.sign({
+            exp: Math.floor(Date.now() / 1000) + (60 * 60 * 24 * 100),
+            data: { data: user }
+        }, JWT_SECRET);
+
+
+        // everything OK!
+        return res.status(201).json({
+            message: "Successfully Logged In !!!",
+            user: user,
+            token: token
+        });
+
+
+    } catch (e) {
+        return res.status(400).json({
+            message: e.message
+        });
+    }
+
+
+}
+
+
+module.exports.verify = async (req, res) => {
+    try {
+        let data = jwt.verify(req.params.token, JWT_SECRET);
+
+        data = data.data;
+        data = data.data;
+
+        await User.findByIdAndUpdate(data._id, { verified: true });
+        return res.status(201).json({ message: "Correct !!!" });
+
+    } catch (e) {
+        return res.status(400).json({ message: "Invalid Token or Token Expired !!!" });
+    }
+
+}
