@@ -4,7 +4,7 @@ const Company = require('./../../models/company');
 module.exports.addPost = async (req, res) => {
 
     try {
-        let { companyName, companyLogo, location, jobRole, skills, linkToApply } = req.body;
+        let { email, companyName, companyLogo, location, jobRole, skills, linkToApply } = req.body;
 
         if (!companyLogo) companyLogo = "DDR-O4";
 
@@ -16,7 +16,7 @@ module.exports.addPost = async (req, res) => {
             });
         }
 
-        const jobpost = await JobPost.create({ companyName, companyLogo, location, jobRole, skills, linkToApply });
+        const jobpost = await JobPost.create({ companyName, companyLogo, location, jobRole, skills, linkToApply, email });
 
         return res.status(201).json({
             message: "Job Post Added !!!",
@@ -26,7 +26,7 @@ module.exports.addPost = async (req, res) => {
     } catch (e) {
         return res.status(400).json({
             message: e.message
-        })
+        });
     }
 
 };

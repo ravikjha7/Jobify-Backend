@@ -24,6 +24,9 @@ const UserSchema = new Schema({
         required: true,
         unique: true
     },
+    profile: {
+        type: String
+    },
     resume: {
         type: String
     },

@@ -24,6 +24,9 @@ const HirerSchema = new Schema({
         required: true,
         unique: true
     },
+    profile: {
+        type: String
+    },
     emailVerified: {
         type: Boolean,
         default: false

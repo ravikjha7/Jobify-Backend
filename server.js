@@ -16,6 +16,7 @@ const hirerRoutes = require('./routes/hirers');
 const companyRoutes = require('./routes/companies');
 const jobpostRoutes = require('./routes/jobposts');
 const feedRoutes = require('./routes/feeds');
+const skillRoutes = require('./routes/skills');
 
 // Routing
 app.use('/user', userRoutes);
@@ -23,6 +24,7 @@ app.use('/hirer', hirerRoutes);
 app.use('/company', companyRoutes);
 app.use('/jobpost', jobpostRoutes);
 app.use('/feed', feedRoutes);
+app.use('/skill', skillRoutes);
 
 
 // Home Page
