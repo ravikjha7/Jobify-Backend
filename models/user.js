@@ -52,6 +52,10 @@ const UserSchema = new Schema({
         type: Boolean,
         default: false
     },
+    reports: {
+        type: [Object],
+        default: []
+    },
     password: {
         type: String,
         required: true
