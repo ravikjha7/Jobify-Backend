@@ -39,6 +39,10 @@ const HirerSchema = new Schema({
         type: Boolean,
         default: false
     },
+    idRejected: {
+        type: Boolean,
+        default: false
+    },
     isBan: {
         type: Boolean,
         default: false
