@@ -201,6 +201,7 @@ module.exports.uploadID = async(req, res) => {
         
 
         hirer.idCard = idCard;
+        hirer.companyName = companyName;
         hirer.idUploaded = true;
         hirer.idRejected = false;
         await hirer.save();
