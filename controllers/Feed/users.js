@@ -6,7 +6,7 @@ module.exports.getFeed = async (req, res) => {
     try {
         const { email } = req.body;
 
-        console.log(email);
+        console.log("Email " + email);
 
         let user = await User.find({ "email": email });
 
