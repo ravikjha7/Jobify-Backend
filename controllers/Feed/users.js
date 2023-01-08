@@ -4,10 +4,10 @@ const User = require('./../../models/user');
 module.exports.getFeed = async (req, res) => {
 
     try {
-        const { email } = req.body;
+        const { email } = req.query;
 
-        console.log("Email " + email);
-
+        console.log(email);
+        
         let user = await User.find({ "email": email });
 
         if (user.length === 0) {
