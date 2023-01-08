@@ -51,7 +51,7 @@ module.exports.getFeed = async (req, res) => {
         })
 
     } catch (e) {
-        console.log(e.message);
+        console.log(e);
         return res.status(400).json({
             message: e.message
         })
