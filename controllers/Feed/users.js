@@ -34,9 +34,9 @@ module.exports.getFeed = async (req, res) => {
 
             let requireSkills = jobpost.skills;
 
-            for (let i in requireSkills) {
+            for (let j in requireSkills) {
 
-                let skill = requireSkills[i];
+                let skill = requireSkills[j];
 
                 if (skills.includes(skill)) {
                     myJobPosts.push(jobpost);
