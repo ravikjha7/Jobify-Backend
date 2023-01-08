@@ -167,3 +167,44 @@ module.exports.verify = async (req, res) => {
     }
 
 }
+
+
+module.exports.updateProfile = async (req, res) => {
+
+    try {
+
+        const { email, contact, profile, resume, skills, certifications, city, education } = req.body;
+
+        let user = await User.find({ "email": email });
+
+        if (user.length === 0) {
+            return res.status(400).json({
+                message: "Invalid Email !!!"
+            });
+        }
+
+        user = user[0];
+
+        user.contact = contact;
+        user.profile = profile;
+        user.resume = resume;
+        user.skills = skills;
+        user.certifications = certifications;
+        user.city = city;
+        user.education = education;
+
+        await user.save();
+
+        return res.status(201).json({
+            message: "Profile updated Successfully",
+            user: user
+        });
+
+
+    } catch (e) {
+        return res.status(400).json({
+            message: e.message
+        });
+    }
+
+}
